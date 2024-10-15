@@ -105,6 +105,10 @@ void traverseMaze(std::vector<std::vector<std::string> >& maze, int x, int y, st
     std::vector<int> nextPosition = {x, y};
     std::vector<std::thread> threadList;
     bool foundEnd = false;
+    bool left = false;
+    bool right = false;
+    bool up = false;
+    bool down = false;
 
     if (x == maze[y].size()-1){
         maze[y][x] = "\033[32m" + maze[y][x] + "\033[0m";
@@ -119,6 +123,7 @@ void traverseMaze(std::vector<std::vector<std::string> >& maze, int x, int y, st
         std::thread downThread(traverseMaze, std::ref(maze), nextPosition[0], nextPosition[1], std::ref(downPromise));
         threadList.push_back(std::move(downThread));
         nextPosition = currentPosition;
+        down = true;
     }
 
     nextPosition = moveUp(std::ref(maze), currentPosition[0], currentPosition[1]);
@@ -126,6 +131,7 @@ void traverseMaze(std::vector<std::vector<std::string> >& maze, int x, int y, st
         std::thread upThread(traverseMaze, std::ref(maze), nextPosition[0], nextPosition[1], std::ref(upPromise));
         threadList.push_back(std::move(upThread));
         nextPosition = currentPosition;
+        up = true;
     }
 
     nextPosition = moveLeft(std::ref(maze), currentPosition[0], currentPosition[1]);
@@ -133,31 +139,38 @@ void traverseMaze(std::vector<std::vector<std::string> >& maze, int x, int y, st
         std::thread leftThread(traverseMaze, std::ref(maze), nextPosition[0], nextPosition[1], std::ref(leftPromise));
         threadList.push_back(std::move(leftThread));
         nextPosition = currentPosition;
+        left = true;
     }
 
     nextPosition = moveRight(std::ref(maze), currentPosition[0], currentPosition[1]);
     if (currentPosition != nextPosition){
         std::thread rightThread(traverseMaze, std::ref(maze), nextPosition[0], nextPosition[1], std::ref(rightPromise));
         threadList.push_back(std::move(rightThread));
+        right = true;
 
     }
 
-    if (rightFuture.get()){
+    if (threadList.size() == 0){
+        returnValue.set_value(false);
+        return;
+    }
+
+    if (right && rightFuture.get()){
         maze[y][x] = "\033[32m" + maze[y][x] + "\033[0m";
         showMaze(std::ref(maze), true);
         returnValue.set_value(true);
     }
-    if (leftFuture.get()){
+    if (left && leftFuture.get()){
         maze[y][x] = "\033[32m" + maze[y][x] + "\033[0m";
         showMaze(std::ref(maze), true);
         returnValue.set_value(true);
     }
-    if (upFuture.get()){
+    if (up && upFuture.get()){
         maze[y][x] = "\033[32m" + maze[y][x] + "\033[0m";
         showMaze(std::ref(maze), true);
         returnValue.set_value(true);
     }
-    if (downFuture.get()){
+    if (down && downFuture.get()){
         maze[y][x] = "\033[32m" + maze[y][x] + "\033[0m";
         showMaze(std::ref(maze), true);
         returnValue.set_value(true);
@@ -165,9 +178,7 @@ void traverseMaze(std::vector<std::vector<std::string> >& maze, int x, int y, st
     for (int i=0; i<threadList.size(); i++){
         threadList[i].join();
     }
-    return;
 
-    
 
 }
 
@@ -187,7 +198,6 @@ int main(){
 
 };
 
-    std::mutex showMazeLock;
     std::vector<int> currentPosition = {0, 1};
     std::promise<bool> foundEnd;
     std::future<bool> foundEndFuture = foundEnd.get_future();
