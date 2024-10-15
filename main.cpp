@@ -158,26 +158,33 @@ void traverseMaze(std::vector<std::vector<std::string> >& maze, int x, int y, st
     if (right && rightFuture.get()){
         maze[y][x] = "\033[32m" + maze[y][x] + "\033[0m";
         showMaze(std::ref(maze), true);
-        returnValue.set_value(true);
+        foundEnd = true;
     }
     if (left && leftFuture.get()){
         maze[y][x] = "\033[32m" + maze[y][x] + "\033[0m";
         showMaze(std::ref(maze), true);
-        returnValue.set_value(true);
+        foundEnd = true;
     }
     if (up && upFuture.get()){
         maze[y][x] = "\033[32m" + maze[y][x] + "\033[0m";
         showMaze(std::ref(maze), true);
-        returnValue.set_value(true);
+        foundEnd = true;
     }
     if (down && downFuture.get()){
         maze[y][x] = "\033[32m" + maze[y][x] + "\033[0m";
         showMaze(std::ref(maze), true);
-        returnValue.set_value(true);
+        foundEnd = true;
     }
     for (int i=0; i<threadList.size(); i++){
         threadList[i].join();
     }
+    if (foundEnd){
+        returnValue.set_value(true);
+    }
+    else{
+        returnValue.set_value(false);
+    }
+    
 
 
 }
