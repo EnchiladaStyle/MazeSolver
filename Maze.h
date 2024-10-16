@@ -11,6 +11,7 @@
 
 class Maze {
     public:
+        std::vector<std::vector<std::string> > layout;
         Maze(std::vector<std::vector<std::string> >_maze);
         void showMaze(bool foundEnd);
         bool isOpen(int x, int y);

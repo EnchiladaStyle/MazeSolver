@@ -8,14 +8,15 @@
 #include <thread>
 #include <future>
 #include <mutex>
+#include "Maze.h"
 
 class Explorer{
     public:
-        std::vector<int> moveLeft(std::vector<std::vector<std::string> >&maze, int x, int y);
-        std::vector<int> moveRight(std::vector<std::vector<std::string> >&maze, int x, int y);
-        std::vector<int> moveDown(std::vector<std::vector<std::string> >&maze, int x, int y);
-        std::vector<int> moveUp(std::vector<std::vector<std::string> >&maze, int x, int y);
-        void traverseMaze(std::vector<std::vector<std::string> >& maze, int x, int y, std::promise<bool>& returnValue);
+        std::vector<int> moveLeft(Maze& maze, int x, int y);
+        std::vector<int> moveRight(Maze& maze, int x, int y);
+        std::vector<int> moveDown(Maze& maze, int x, int y);
+        std::vector<int> moveUp(Maze& maze, int x, int y);
+        void traverseMaze(Maze& maze, int x, int y, std::promise<bool>& returnValue, bool* done);
 };
 
 #endif
