@@ -5,7 +5,7 @@
 
 # Overview
 
-This Program Uses multithreading to search multiple paths at once through a maze. When it finds the end it marks the successful path in green.
+This Program Uses multithreading to search multiple paths at once through a maze. When it finds the end it marks the successful path in green. There are three mazes so far, but the algorithm would work with any maze given to it.
 
 The purpose of this project was to practice C++ and multithreading
 
