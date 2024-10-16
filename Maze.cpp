@@ -1,26 +1,16 @@
-#include <iostream>
-#include <vector>
-#include <thread>
-#include <chrono>
-#include <thread>
-#include <future>
-#include <mutex>
 
-class Maze{
+#include "Maze.h"
 
-    public:
 
-        std::vector<std::vector<std::string> > maze;
-
-        Maze(std::vector<std::vector<std::string> >_maze){
-            maze = _maze;
+        Maze::Maze(std::vector<std::vector<std::string> >_maze){
+            layout = _maze;
         }
 
-        void showMaze(bool foundEnd){
+        void Maze::showMaze(bool foundEnd){
 
             std::system("clear");
 
-            for (std::vector<std::string> level : maze){
+            for (std::vector<std::string> level : layout){
 
                 for (std::string cell : level){
                     std::cout<<cell;
@@ -30,22 +20,18 @@ class Maze{
             }
 
             if (!foundEnd){
-                std::this_thread::sleep_for(std::chrono::milliseconds(200));
+                std::this_thread::sleep_for(std::chrono::milliseconds(100));
             } 
 
         }
 
 
-        bool isOpen(int x, int y){
+        bool Maze::isOpen(int x, int y){
 
-            if (maze[y][x] == " "){
+            if (layout[y][x] == " "){
                 return true;
             }
             else{
                 return false;
             }
 }
-
-    private:
-
-};
