@@ -1,11 +1,4 @@
-#include <iostream>
-#include <vector>
-#include <thread>
-#include <chrono>
-#include <thread>
-#include <future>
-#include <mutex>
-#include "Maze.h"
+
 #include "Explorer.h"
 
 
@@ -61,7 +54,7 @@
 
     }
 
-    void Explorer::traverseMaze(Maze& maze, int x, int y, std::promise<bool>& returnValue){
+    void Explorer::traverseMaze(Maze& maze, int x, int y, std::promise<bool>& returnValue, bool* done){
 
         std::promise<bool> leftPromise;
         std::future<bool> leftFuture = leftPromise.get_future();
@@ -81,17 +74,23 @@
         bool up = false;
         bool down = false;
 
-        if (x == maze.layout[y].size()-1){
-            maze.layout[y][x] = "\033[32m" + maze.layout[y][x] + "\033[0m";
-            returnValue.set_value(true);
+        if (*done){
+            returnValue.set_value(false);
             return;
         }
 
-        std::this_thread::sleep_for(std::chrono::milliseconds(200));
+        if (x == maze.layout[y].size()-1){
+            maze.layout[y][x] = "\033[32m" + maze.layout[y][x] + "\033[0m";
+            returnValue.set_value(true);
+            *done = true;
+            return;
+        }
+
+        std::this_thread::sleep_for(std::chrono::milliseconds(100));
 
         nextPosition = moveDown(maze, currentPosition[0], currentPosition[1]);
         if (currentPosition != nextPosition){
-            std::thread downThread(&Explorer::traverseMaze, this, std::ref(maze), nextPosition[0], nextPosition[1], std::ref(downPromise));
+            std::thread downThread(&Explorer::traverseMaze, this, std::ref(maze), nextPosition[0], nextPosition[1], std::ref(downPromise), done);
             threadList.push_back(std::move(downThread));
             nextPosition = currentPosition;
             down = true;
@@ -99,7 +98,7 @@
 
         nextPosition = moveUp(maze, currentPosition[0], currentPosition[1]);
         if (currentPosition != nextPosition){
-            std::thread upThread(&Explorer::traverseMaze, this, std::ref(maze), nextPosition[0], nextPosition[1], std::ref(upPromise));
+            std::thread upThread(&Explorer::traverseMaze, this, std::ref(maze), nextPosition[0], nextPosition[1], std::ref(upPromise), done);
             threadList.push_back(std::move(upThread));
             nextPosition = currentPosition;
             up = true;
@@ -107,7 +106,7 @@
 
         nextPosition = moveLeft(maze, currentPosition[0], currentPosition[1]);
         if (currentPosition != nextPosition){
-            std::thread leftThread(&Explorer::traverseMaze, this, std::ref(maze), nextPosition[0], nextPosition[1], std::ref(leftPromise));
+            std::thread leftThread(&Explorer::traverseMaze, this, std::ref(maze), nextPosition[0], nextPosition[1], std::ref(leftPromise), done);
             threadList.push_back(std::move(leftThread));
             nextPosition = currentPosition;
             left = true;
@@ -115,7 +114,7 @@
 
         nextPosition = moveRight(maze, currentPosition[0], currentPosition[1]);
         if (currentPosition != nextPosition){
-            std::thread rightThread(&Explorer::traverseMaze, this, std::ref(maze), nextPosition[0], nextPosition[1], std::ref(rightPromise));
+            std::thread rightThread(&Explorer::traverseMaze, this, std::ref(maze), nextPosition[0], nextPosition[1], std::ref(rightPromise), done);
             threadList.push_back(std::move(rightThread));
             right = true;
 
@@ -128,22 +127,18 @@
 
         if (right && rightFuture.get()){
             maze.layout[y][x] = "\033[32m" + maze.layout[y][x] + "\033[0m";
-            maze.showMaze(true);
             foundEnd = true;
         }
         if (left && leftFuture.get()){
             maze.layout[y][x] = "\033[32m" + maze.layout[y][x] + "\033[0m";
-            maze.showMaze(true);
             foundEnd = true;
         }
         if (up && upFuture.get()){
             maze.layout[y][x] = "\033[32m" + maze.layout[y][x] + "\033[0m";
-            maze.showMaze(true);
             foundEnd = true;
         }
         if (down && downFuture.get()){
             maze.layout[y][x] = "\033[32m" + maze.layout[y][x] + "\033[0m";
-            maze.showMaze(true);
             foundEnd = true;
         }
         for (int i=0; i<threadList.size(); i++){
